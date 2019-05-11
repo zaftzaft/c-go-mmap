@@ -21,32 +21,30 @@ int main(void) {
 
   if((fd = shm_open("c-go-mmap", O_RDWR|O_CREAT, 0664)) == -1) {
     fprintf(stderr, "shm_open error\n");
-		goto error;
+    return 1;
   }
 
   ret = ftruncate(fd, sizeof(struct hoge_t));
   if(ret != 0) {
     fprintf(stderr, "ftruncate %s\n", strerror(errno));
-		goto error;
+    return 1;
   }
 
   fstat(fd, &stat);
 
   mmap_ptr = mmap(NULL, stat.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
+  close(fd);
+
   hoge = (struct hoge_t *)mmap_ptr;
 
   hoge->num = 0;
   hoge->num2 = 10;
 
-	while(1) {
-		hoge->num++;
-		usleep(100 * 1000);
-	}
-
-
-error:
-  close(fd);
+  while(1) {
+    hoge->num++;
+    usleep(100 * 1000);
+  }
 
   return 0;
 }
